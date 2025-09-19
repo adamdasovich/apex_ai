@@ -1,12 +1,13 @@
 # mining_ai_project/settings/base.py
 import os
 from pathlib import Path
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-change-in-production')
-DEBUG = False
-ALLOWED_HOSTS = []
+SECRET_KEY = config('SECRET_KEY', default='dev-secret')
+DEBUG = config('DEBUG', default=True, cast=bool)
+ALLOWED_HOSTS = config("ALLOWED_HOST", default="localhost").split(",")
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -114,3 +115,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    "http://127.0.0.1:3000"
+]
