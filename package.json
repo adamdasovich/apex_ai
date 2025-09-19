@@ -1,0 +1,22 @@
+{
+  "name": "mining-ai-platform",
+  "version": "1.0.0",
+  "description": "AI-Powered Mining Platform",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python manage.py runserver",
+    "dev:frontend": "cd frontend && npm run dev",
+    "install:all": "npm run install:frontend && npm run install:contracts",
+    "install:frontend": "cd frontend && npm install",
+    "install:contracts": "cd contracts && npm install",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["mining", "ai", "blockchain", "nft", "django", "react"],
+  "author": "Your Name",
+  "license": "MIT"
+}
