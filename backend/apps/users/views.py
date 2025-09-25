@@ -5,9 +5,10 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.db.models import Q
+from django.utils import timezone
 from .models import MiningUser, UserProfile
 from .serializers import (UserRegistrationSerializer, UserProfileUpdateSerializer,
-                         UserPublicSerializer)
+                         UserPublicSerializer, UserDetailSerializer)
 
 class RegisterView(generics.CreateAPIView):
     queryset = MiningUser.objects.all()
@@ -86,6 +87,11 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return UserDetailSerializer
+        return UserProfileUpdateSerializer
 
 class PublicUserListView(generics.ListAPIView):
     serializer_class = UserPublicSerializer

@@ -1,3 +1,4 @@
+# backend/apps/users/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import MiningUser, UserProfile
@@ -34,15 +35,27 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         
         return user
 
+# Add this new serializer for getCurrentUser
+class UserDetailSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(required=False)
+    profile_completion_percentage = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = MiningUser
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'user_type',
+                 'bio', 'company', 'job_title', 'location', 'interests', 
+                 'profile_public', 'show_location', 'profile_completion_percentage', 'profile']
+    
+    def get_profile_completion_percentage(self, obj):
+        return obj.profile_completion_percentage
+
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(required=False)
-    profile_completion_percentage = serializers.ReadOnlyField()
     
     class Meta:
         model = MiningUser
         fields = ['first_name', 'last_name', 'bio', 'company', 'job_title', 
-                 'location', 'interests', 'profile_public', 'show_location',
-                 'profile_completion_percentage', 'profile']
+                 'location', 'interests', 'profile_public', 'show_location', 'profile']
     
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', {})
@@ -52,20 +65,21 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         
-        # Update profile fields
+        # Update or create profile fields
         if profile_data:
-            profile = instance.profile
+            profile, created = UserProfile.objects.get_or_create(user=instance)
             for attr, value in profile_data.items():
                 setattr(profile, attr, value)
             profile.save()
         
         # Check if profile is now complete
-        instance.mark_profile_completed()
+        if hasattr(instance, 'mark_profile_completed'):
+            instance.mark_profile_completed()
         
         return instance
 
+# Keep your existing UserPublicSerializer
 class UserPublicSerializer(serializers.ModelSerializer):
-    """Serializer for public user information"""
     display_name = serializers.ReadOnlyField()
     
     class Meta:

@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Count, Avg, Max, Min
 from .models import *
 from .serializers import *
@@ -35,15 +35,15 @@ class PropertyViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def statistics(self, request, pk=None):
         """Get detailed statistics for a property"""
-        property_obj = self.get_object()
+        geo_property_obj = self.get_object()
 
         # get all samples for this property
-        samples = DrillSample.objects.filter(drill_hole__property=property_obj)
+        samples = DrillSample.objects.filter(drill_hole__geo_property=geo_property_obj)
 
         # Calculate statistics
         stats = {
-            'property_name': property_obj.name,
-            'total_drill_holes': property_obj.drill_holes.count(),
+            'geo_property_name': geo_property_obj.name,
+            'total_drill_holes': geo_property_obj.drill_holes.count(),
             'total_samples': samples.count(),
             'total_meters': samples.aggregate(
                 total=models.Sum(models.F('to_depth') - models.F('from_depth'))
@@ -86,7 +86,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         return Response(stats)
     
 class DrillHoleViewSet(viewsets.ModelViewSet):
-    queryset = DrillHole.objects.select_related('property').prefetch_related('samples')
+    queryset = DrillHole.objects.select_related('geo_property').prefetch_related('samples')
     serializer_class = DrillHoleSerializer
     permission_classes = [IsAuthenticated]
 
@@ -94,14 +94,14 @@ class DrillHoleViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         #Filter by property
-        property_id = self.request.query_params.get('geo_property')
-        if property_id:
-            queryset = queryset.filter(property_id=property_id)
-        return queryset.order_by('property__name', 'hole_id')
+        geo_property_id = self.request.query_params.get('geo_property')
+        if geo_property_id:
+            queryset = queryset.filter(geo_property_id=geo_property_id)
+        return queryset.order_by('geo_property__name', 'hole_id')
     
 
 class DrillSampleViewSet(viewsets.ModelViewSet):
-    queryset = DrillSample.objects.select_related('drill_hole__property')
+    queryset = DrillSample.objects.select_related('drill_hole__geo_property')
     serializer_class = DrillSampleSerializer
     permission_classes = [IsAuthenticated]
     
@@ -114,9 +114,9 @@ class DrillSampleViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(drill_hole_id=drill_hole_id)
             
         # Filter by property
-        property_id = self.request.query_params.get('geo_property')
-        if property_id:
-            queryset = queryset.filter(drill_hole__property_id=property_id)
+        geo_property_id = self.request.query_params.get('geo_property')
+        if geo_property_id:
+            queryset = queryset.filter(drill_hole__geo_property_id=geo_property_id)
             
         # Filter by minimum gold grade
         min_gold_grade = self.request.query_params.get('min_gold_grade')

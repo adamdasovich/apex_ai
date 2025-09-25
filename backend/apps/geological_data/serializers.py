@@ -17,7 +17,7 @@ class DrillSampleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DrillSample
-        fields = ['id', 'from_depth', 'to_depth', 'interval_length', 'midpoint_depth',
+        fields = ['id', 'drill_hole', 'from_depth', 'to_depth', 'interval_length', 'midpoint_depth',
                  'gold_grade', 'silver_grade', 'copper_grade', 'rock_type', 
                  'alteration', 'mineralization']
         
@@ -26,11 +26,11 @@ class DrillHoleSerializer(serializers.ModelSerializer):
     samples = DrillSampleSerializer(many=True, read_only=True)
     sample_count = serializers.ReadOnlyField()
     average_gold_grade = serializers.ReadOnlyField()
-    property_name = serializers.CharField(source='geo_property.name', read_only=True)
+    geo_property_name = serializers.CharField(source='geo_property.name', read_only=True)
 
     class Meta:
         model = DrillHole
-        fields = ['id', 'hole_id', 'geo_property', 'property_name', 'latitude', 'longitude', 
+        fields = ['id', 'hole_id', 'geo_property', 'geo_property_name', 'latitude', 'longitude', 
                  'elevation', 'total_depth', 'azimuth', 'dip', 'drilling_date', 
                  'sample_count', 'average_gold_grade', 'samples']
 

@@ -143,22 +143,54 @@ class DrillSample(models.Model):
         unique_together = ['drill_hole', 'from_depth', 'to_depth']
         ordering = ['drill_hole', 'from_depth']
 
+    # def clean(self):
+    #     """Validate depth relationships"""
+    #     if self.to_depth <= self.from_depth:
+    #         raise ValidationError("To depth must be greater than from depth")
+    #     if self.from_depth < 0:
+    #         raise ValidationError("From depth cannot be negative")
+        
+    #     # Use drill_hole_id instead of drill_hole for validation during creation
+    #     if not self.drill_hole_id:
+    #         raise ValidationError("Drill hole is required")
+        
+    #     # Check for overlapping intervals in the same hole
+    #     overlapping = DrillSample.objects.filter(
+    #         drill_hole_id=self.drill_hole_id  # Use drill_hole_id instead of drill_hole
+    #     ).exclude(pk=self.pk).filter(
+    #         from_depth__lt=self.to_depth,
+    #         to_depth__gt=self.from_depth
+    #     )
+    #     if overlapping.exists():
+    #         raise ValidationError("Sample intervals cannot overlap")
+
+    """Temperory clean function"""
     def clean(self):
         """Validate depth relationships"""
+        # Debug logging
+        print(f"DEBUG: drill_hole_id = {self.drill_hole_id}")
+        print(f"DEBUG: from_depth = {self.from_depth}")
+        print(f"DEBUG: to_depth = {self.to_depth}")
+        
         if self.to_depth <= self.from_depth:
             raise ValidationError("To depth must be greater than from depth")
         if self.from_depth < 0:
             raise ValidationError("From depth cannot be negative")
         
+        # Use drill_hole_id instead of drill_hole for validation during creation
+        if not self.drill_hole_id:
+            raise ValidationError("Drill hole is required")
+        
         # Check for overlapping intervals in the same hole
         overlapping = DrillSample.objects.filter(
-            drill_hole=self.drill_hole
+            drill_hole_id=self.drill_hole_id
         ).exclude(pk=self.pk).filter(
             from_depth__lt=self.to_depth,
             to_depth__gt=self.from_depth
         )
         if overlapping.exists():
             raise ValidationError("Sample intervals cannot overlap")
+
 
     def save(self, *args, **kwargs):
         self.clean()

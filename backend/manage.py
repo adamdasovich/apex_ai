@@ -8,7 +8,7 @@ import sys
 def main():
     """Run administrative tasks."""
     # Use development settings by default
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mining_ai_project.settings.development')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mining_ai_project.settings.base')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
